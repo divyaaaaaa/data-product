@@ -1,0 +1,2801 @@
+product:
+  version: 0.0.0
+  contactEmail: product.owner@example.com
+  contactName: Product Owner
+  x-custom-field-enabled: true
+  x-custom-field-include-object-types: ["data", "schema", "table", "attribute", 'bi_server', 'bi_report', 'bi_datasource', 'bi_folder', 'bi_connection', 'bi_connection_column', 'bi_datasource_column']
+  
+  deliverySystems:
+    postgres:
+      type: sql
+      uri: postgresql://<HOST>:<PORT>/<DATABASE_NAME>
+      x-alation-analytics: true
+  en:
+    description: |
+      # Analytics RDBMS and BI Curation DP
+
+      This data product provides access to core analytics RDBMS tables
+      including:
+
+      **RDBMS Catalog Objects:**
+      - **rdbms_datasources**: Data source connections and configuration
+      - **rdbms_schemas**: Database schemas and containers
+      - **rdbms_tables**: Relational database table metadata and structure
+      - **rdbms_columns**: Column/attribute definitions and properties
+
+      **Custom Fields & Governance:**
+      - **customfieldvalue**: Custom fields linking catalog objects to users, groups, policies, terms/documents or other entities
+
+      **User & Access Management:**
+      - **users**: User account information and profiles
+      - **alation_group**: Group definitions and metadata
+      - **user_group_membership**: Relationships between users and groups
+
+      **Governance Objects:**
+      - **business_policy**: Policies information
+      - **terms**: Glossary term / Document information
+      - **glossaries**: Glossary/folder containers and hierarchies
+      - **article**: Articles and documentation
+
+      This data product also provides insights into your Business Intelligence ecosystem. 
+      It encompasses information about BI servers, data sources, reports, folders, and
+      connection details, enabling deep analysis of your BI infrastructure and
+      usage patterns. With this data product, you can explore report structures,
+      data lineage, and user interactions to optimize your BI strategy and
+      improve decision-making processes.
+
+
+
+      Example questions that can be answered using SQL:
+
+      1. What are the most frequently used data sources across all BI reports?
+      2. How many reports are contained within each folder, and what is the
+      folder hierarchy?
+      3. What is the distribution of report types (simple vs. dashboard) in our
+      BI environment?
+      4. Which BI reports have the most complex data transformations based on
+      connection column count?
+      5. How has the number of BI reports and data sources grown over time?
+
+    name: Analytics RDBMS and BI DP
+  productId: alation-rdbms-bi-dp
+  recordSets:
+    rdbms_tables:
+      name: rdbms_tables
+      displayName: RDBMS Tables
+      description: >
+        Each row represents a single cataloged table or view and its
+        most recent metadata as captured by Alation Analytics. Some fields
+        may be NULL depending on source system and configuration.
+        This table does not directly store responsibility or assignment
+        information. Such relationships are maintained in `customfieldvalue`
+        and can be joined using the appropriate object identifiers.
+      schema:
+        - name: ts_created
+          displayName: Object Created At
+          description: When the object was first created in the catalog.
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: When the object metadata was last updated.
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: Soft-delete timestamp if the object was removed.
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: Soft-delete flag indicating logical deletion of the object.
+          type: boolean
+        - name: table_id
+          displayName: Table ID (Source)
+          description: >
+            Identifier for the physical table in the source system, if applicable.
+          type: numeric
+        - name: schema_id
+          displayName: Schema ID
+          description: Identifier of the schema/container in the source system.
+          type: numeric
+        - name: ds_id
+          displayName: Data Source ID
+          description: Identifier of the data source (database/connection).
+          type: numeric
+        - name: fp
+          displayName: Fingerprint
+          description: Hash-like fingerprint for the object identity/content.
+          type: numeric
+        - name: name
+          displayName: Name
+          description: Technical object name as stored in the source system.
+          type: text
+        - name: title
+          displayName: Title
+          description: Human-friendly display title for the object.
+          type: text
+        - name: description
+          displayName: Description
+          description: Free-text business description of the object.
+          type: text
+        - name: auto_description
+          displayName: Auto Description
+          description: Automatically generated description, if available.
+          type: text
+        - name: auto_title_discarded
+          displayName: Auto Title Discarded
+          description: True if a machine-suggested title was rejected.
+          type: boolean
+        - name: type
+          displayName: Table Type Code
+          description: |
+            Table type classification code. 
+            Possible values:
+            - 0 = TABLE (regular table)
+            - 1 = VIEW (database view)
+            - 2 = UNKNOWN (unclassified object)
+            - 3 = SYNONYM (synonym/alias)
+
+            Note: This field has the same values as table_type field.
+          type: numeric
+        - name: last_profiled
+          displayName: Last Profiled At
+          description: Timestamp of the most recent profiling run captured for this object.
+          type: datetime
+        - name: owner
+          displayName: Owner (User ID)
+          description: |
+            User ID of the catalog owner who has responsibility for this table in Alation.
+            
+            This is a foreign key reference to users.user_id.
+            Can be joined with the users table to get owner details (name, email, etc.).
+          type: numeric
+        - name: db_comment
+          displayName: Database Comment
+          description: Comment string pulled from the underlying database.
+          type: text
+        - name: num_rows_to_profile
+          displayName: Rows To Profile (Configured)
+          description: Maximum number of rows to profile for this object.
+          type: numeric
+        - name: num_sample_rows
+          displayName: Sample Rows
+          description: Number of rows sampled during profiling/preview.
+          type: numeric
+        - name: num_attributes
+          displayName: Column Count
+          description: Number of attributes (columns) in the object.
+          type: numeric
+        - name: row_count
+          displayName: Row Count (Last Observed)
+          description: Last known number of rows captured by analytics.
+          type: numeric
+        - name: skip_profiling
+          displayName: Skip Profiling
+          description: If true, profiling is disabled for this object.
+          type: boolean
+        - name: excluded
+          displayName: Excluded
+          description: If true, the object is excluded from catalog indexing/profiling.
+          type: boolean
+        - name: table_type
+          displayName: Table Type Code
+          description: |
+            Table type classification code. 
+            Possible values:
+            - 0 = TABLE (regular table)
+            - 1 = VIEW (database view)
+            - 2 = UNKNOWN (unclassified object)
+            - 3 = SYNONYM (synonym/alias)
+
+            Note: This field has the same values as type field.
+          type: numeric
+        - name: definition_sql
+          displayName: Definition SQL
+          description: DDL or CREATE statement text, when available.
+          type: text
+        - name: source_text
+          displayName: Source Text
+          description: Raw source text/metadata captured from the system of record.
+          type: text
+        - name: source_url
+          displayName: Source URL
+          description: Link to the upstream system/resource for this object.
+          type: text
+        - name: db_table_type
+          displayName: DB Table Type
+          description: Type reported by the database (e.g., BASE TABLE, VIEW).
+          type: text
+        - name: table_owner
+          displayName: DB Owner
+          description: Owner/principal at the database level.
+          type: text
+        - name: partitioning_attributes
+          displayName: Partitioning Attributes
+          description: |
+            Array of column names used for table partitioning.
+            Example: ['order_date', 'region'] for tables partitioned by date and region.
+            Empty array [] if table is not partitioned.
+          type: array
+        - name: partitioning_info
+          displayName: Partitioning Info
+          description: Human-readable or raw partitioning metadata.
+          type: text
+        - name: view_sql
+          displayName: View SQL
+          description: SQL text that defines the view, if the object is a view.
+          type: text
+        - name: description_html
+          displayName: Description (HTML)
+          description: HTML-rendered description, if available.
+          type: text
+        - name: constraint_text
+          displayName: Constraint Text
+          description: Constraint definitions (e.g., PK/UK) captured as text.
+          type: text
+        - name: table_url
+          displayName: Catalog URL
+          description: Direct link to the object’s page in the Alation catalog.
+          type: text
+        - name: original_name
+          displayName: Original Name
+          description: Original name of the object before any renaming.
+          type: text
+        - name: private
+          displayName: Private
+          description: Visibility-restriction flag for the object.
+          type: boolean
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","table_id","schema_id","ds_id","fp","name","title","description","auto_description","auto_title_discarded","type","last_profiled","owner","db_comment","num_rows_to_profile","num_sample_rows","num_attributes","row_count","skip_profiling","excluded","table_type","definition_sql","source_text","source_url","db_table_type","table_owner","partitioning_attributes","partitioning_info","view_sql","description_html","constraint_text","table_url","original_name","private"
+          "2023-11-05 10:15:00+00","2025-07-01 09:00:00+00",,false,445566,321,12,9876543210123,"sales_orders","Sales Orders","Order facts by customer and date.",,false,1,"2025-06-30 00:00:00+00",102,"Base table for orders.",50000,1000,24,128765432,false,false,0,,,"jdbc:postgresql://prod-db/sales","BASE TABLE","dwh_owner","{order_date}","RANGE (order_date)",,"<p>Order facts by customer and date.</p>","PRIMARY KEY (order_id)","https://alation/catalog/table/2001","sales_orders",false
+          "2023-07-10 14:00:00+00","2025-05-15 16:20:00+00","2025-08-10 12:00:00+00",true,445567,321,12,9876543210456,"sales_orders_v","Sales Orders (View)","Convenience view over sales_orders.","Auto: View exposing selected fields.",true,2,"2025-06-28 00:00:00+00",102,"Read-only view",10000,500,18,127000000,true,true,1,"CREATE VIEW sales_orders_v AS SELECT ...;",,"jdbc:postgresql://prod-db/sales","VIEW","dwh_owner","{}","", "SELECT * FROM sales_orders WHERE status='COMPLETE';","<p>Convenience view over <em>sales_orders</em>.</p>",,"https://alation/catalog/table/2002","sales_orders_view",true
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: rdbms_tables
+
+    rdbms_columns:
+      name: rdbms_columns
+      displayName: RDBMS Columns
+      description: |
+        Each row represents a column (attribute) within a database table.
+        Contains metadata about column data types, constraints, and properties.
+
+        Key use cases:
+        - Discover column-level metadata and data types
+        - Identify primary keys and sensitive columns
+        - Track column descriptions and business definitions
+        - Link columns to their parent tables
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: |
+            Timestamp when the column was first cataloged.
+            
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: |
+            Timestamp when the column metadata was last updated.
+            
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: |
+            Soft-delete timestamp if the column was removed.
+            
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: |
+            Soft-delete flag indicating logical deletion.
+            
+          type: boolean
+        - name: column_id
+          displayName: Column ID
+          description: |
+            Unique identifier for the column.
+            
+            Primary identifier for this column across the catalog.
+          type: numeric
+        - name: table_id
+          displayName: Table ID
+          description: |
+            Foreign key to the parent table.
+            
+            References rdbms_tables.table_id.
+          type: numeric
+        - name: schema_id
+          displayName: Schema ID
+          description: |
+            Foreign key to the parent schema.
+            
+            References rdbms_schemas.schema_id.
+          type: numeric
+        - name: ds_id
+          displayName: Datasource ID
+          description: |
+            Foreign key to the parent datasource.
+            
+            References rdbms_datasources.ds_id.
+          type: numeric
+        - name: name
+          displayName: Name
+          description: |
+            Technical column name as it appears in the database.
+            
+          type: text
+        - name: title
+          displayName: Title
+          description: |
+            Human-friendly display title for the column.
+            
+          type: text
+        - name: description
+          displayName: Description
+          description: |
+            Business description of the column.
+            
+          type: text
+        - name: data_type
+          displayName: Data Type
+          description: |
+            Database-specific data type of the column.
+            
+            Examples: VARCHAR(255), INTEGER, TIMESTAMP, DECIMAL(10,2)
+          type: text
+        - name: norm_type
+          displayName: Normalized Type
+          description: |
+            Normalized/standardized data type across different database systems.
+            
+            Alation's internal type classification for cross-platform compatibility.
+          type: text
+        - name: nullable
+          displayName: Nullable
+          description: |
+            Whether the column allows NULL values.
+            
+          type: boolean
+        - name: is_primary_key
+          displayName: Is Primary Key
+          description: |
+            Whether this column is part of the table's primary key.
+            
+          type: boolean
+        - name: position
+          displayName: Position
+          description: |
+            Ordinal position of the column in the table (0-indexed or 1-indexed).
+            
+          type: numeric
+        - name: sensitive
+          displayName: Sensitive
+          description: |
+            Flag indicating if this column contains sensitive/PII data.
+            
+            Defaults to false.
+          type: boolean
+        - name: excluded
+          displayName: Excluded
+          description: |
+            If true, this column is excluded from profiling/indexing.
+            
+            Defaults to false.
+          type: boolean
+        - name: db_comment
+          displayName: Database Comment
+          description: |
+            Comment string pulled from the underlying database.
+            
+          type: text
+        - name: attribute_url
+          displayName: Column URL
+          description: |
+            Direct link to the column's page in the Alation catalog.
+            
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","column_id","table_id","schema_id","ds_id","name","title","description","data_type","norm_type","nullable","is_primary_key","position","sensitive","excluded","db_comment","attribute_url"
+          "2024-03-01 09:00:00+00","2025-06-20 11:00:00+00",,false,100001,445566,321,12,"order_id","Order ID","Unique identifier for each order","INTEGER","int4",false,true,1,false,false,"Primary key for orders table","https://alation/attribute/100001"
+          "2024-03-01 09:00:00+00","2025-06-20 11:00:00+00",,false,100002,445566,321,12,"customer_email","Customer Email","Email address of the customer","VARCHAR(255)","varchar",true,false,5,true,false,,"https://alation/attribute/100002"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: rdbms_columns
+
+    customfieldvalue:
+      name: customfieldvalue
+      displayName: Custom Field Values
+      description: |
+        Each row represents a specific custom field value assigned to a catalog object.
+        This table acts as a flexible junction connecting catalog objects (tables, schemas, datasources, etc.)
+        to various entities through custom fields (users, groups, policies, terms, etc.).
+
+        Key concepts:
+        - Use object_id + object_type to identify which catalog object has the custom field
+        - field_type determines which value column to read (field_value_text vs field_value_array)
+        - Array values use entity prefixes (e.g., 'user_123', 'groupprofile_456') for references
+        - GIN index on field_value_array enables efficient containment queries (@> operator)
+      schema:
+        - name: object_id
+          displayName: Object ID
+          description: |
+            Unique identifier of the catalog object to which the custom field value applies.
+            
+
+            This ID corresponds to the primary identifier of objects in different tables:
+            - For object_type='table': links to rdbms_tables.table_id
+            - For object_type='schema': links to schema_id in respective table
+            - For object_type='data': links to datasource_id
+            - For object_type='attribute': links to column_id
+            - And so on for other object types
+
+            Always use in combination with object_type to identify the catalog object.
+          type: numeric
+        - name: object_type
+          displayName: Object Type
+          description: |
+            Type of the catalog object to which this custom field applies.
+            
+
+            **Prominent object_type values** (most commonly used):
+            - 'data' = Datasource (database connection)
+            - 'schema' = Database schema
+            - 'table' = Table or view
+            - 'attribute' = Column/attribute
+            - 'business_policy' = Business policy
+            - 'glossary_v3' = Glossary or folder
+            - 'glossary_term' = Term or document
+            - 'article' = Article
+            - 'user' = User
+            - 'groupprofile' = Group
+            - 'bi_server' = BI Server
+            - 'bi_report' = BI Report
+            - 'bi_datasource' = BI Data Source
+            - 'bi_folder' = BI Folder
+            - 'bi_connection' = BI Connection
+            - 'bi_connection_column' = BI Connection Column
+            - 'bi_datasource_column' = BI Data Source Column
+
+
+            Note: Always use exact string matching (case-sensitive) when filtering by object_type.
+          type: text
+        - name: field_value_text
+          displayName: Text Field Value
+          description: |
+            Stores the custom field value for text-based field types.
+            
+
+            **Used by these field_type values:**
+            - TEXT: Plain text values
+            - RICH_TEXT: HTML-formatted text
+            - DATE: Date values (stored as text, format: 'YYYY-MM-DD')
+            - FLAG: Boolean-like values (stored as text, e.g., 'true'/'false')
+
+            This column is NULL when field_type is OBJECT_SET, PICKER, or MULTI_PICKER
+            (those use field_value_array instead).
+          type: text
+        - name: field_value_array
+          displayName: Array Field Value
+          description: |
+            Stores the custom field value(s) for array-based field types.
+            
+
+            **Used by these field_type values:**
+            - OBJECT_SET: References to other catalog objects (with entity prefixes)
+            - MULTI_PICKER: Multiple selection from predefined options
+            - PICKER: Single selection from predefined options (stored as single-element array)
+
+            **Entity prefix mapping for OBJECT_SET references:**
+            Array elements are prefixed with entity type followed by underscore and ID:
+            - 'user_<id>' = User (e.g., 'user_123')
+            - 'groupprofile_<id>' = Group (e.g., 'groupprofile_456')
+            - 'business_policy_<id>' = Business Policy (e.g., 'business_policy_789')
+            - 'glossary_term_<id>' = Term/Document (e.g., 'glossary_term_101')
+            - 'glossary_v3_<id>' = Glossary/Folder (e.g., 'glossary_v3_202')
+            - 'article_<id>' = Article (e.g., 'article_303')
+            - 'data_<id>' = Datasource (e.g., 'data_12')
+            - 'schema_<id>' = Schema (e.g., 'schema_34')
+            - 'table_<id>' = Table (e.g., 'table_567')
+            - 'attribute_<id>' = Column (e.g., 'attribute_890')
+
+            **For PICKER/MULTI_PICKER (non-OBJECT_SET):**
+            Array contains plain string values without prefixes (e.g., ['Yes'], ['No'], ['Option1', 'Option2']).
+
+            **Query tips:**
+            - Use PostgreSQL's @> operator for containment checks: field_value_array @> ARRAY['user_123']
+            - GIN index on this column enables efficient array queries
+            - Extract ID from prefixed values using split or regex functions
+
+            This column is NULL when field_type is TEXT, RICH_TEXT, DATE, or FLAG
+            (those use field_value_text instead).
+          type: array
+        - name: field_id
+          displayName: Field ID
+          description: >
+              Internal identifier of the custom field definition.
+          type: integer
+        - name: field_name
+          displayName: Field Name
+          description: |
+            The user-defined name of the custom field applied to a catalog object.
+            
+
+            Examples: 'technical owner', 'data steward', 'applicable policies', 'PII classification'
+
+            **Important notes:**
+            - Field names are user-defined and can vary between Alation instances
+            - Use case-insensitive matching with ILIKE for robustness
+            - Common patterns: ownership fields often contain 'owner' or 'steward'
+            - Policy fields often contain 'policy' or 'policies'
+            - Classification fields often contain 'classification', 'sensitivity', 'tier'
+
+            **Query tip:** Use `field_name ILIKE '%owner%'` for flexible pattern matching.
+          type: text
+        - name: field_type
+          displayName: Field Type
+          type: text
+          description: |
+            The data type of the custom field, determining how values are stored and interpreted.
+            
+
+            **Complete enumeration of field_type values:**
+            - **TEXT**: Plain text values (stored in field_value_text)
+            - **RICH_TEXT**: HTML-formatted text (stored in field_value_text)
+            - **DATE**: Date values (stored in field_value_text as 'YYYY-MM-DD')
+            - **FLAG**: Boolean-like values (stored in field_value_text)
+            - **PICKER**: Single selection from predefined options (stored in field_value_array)
+            - **MULTI_PICKER**: Multiple selections from predefined options (stored in field_value_array)
+            - **OBJECT_SET**: References to catalog objects with entity prefixes (stored in field_value_array)
+
+            **Value storage mapping:**
+            - field_value_text used by: TEXT, RICH_TEXT, DATE, FLAG
+            - field_value_array used by: PICKER, MULTI_PICKER, OBJECT_SET
+
+            This is the complete list of possible field_type values.
+        - name: ts_created
+          displayName: Custom Field Value Created At
+          description: When the value was first set in the catalog.
+          type: datetime
+        - name: ts_updated
+          displayName: Custom Field Value Last Updated At
+          description: When the value was last updated in the catalog.
+          type: datetime
+      sample:
+        type: mock
+        data: |
+          "object_id","object_type","field_value_text","field_value_array","field_id","field_name","field_type"
+          "5001","table",,["user_1"],"10004","technical owner","OBJECT_SET"
+          "3001","schema",,["groupprofile_1001"],"10004","technical owner","OBJECT_SET"
+          "3001","table",,["business_policy_1001"],"10006","applicable policies","OBJECT_SET"
+          "3001","table",,["Yes"],"10007","Is Sensitive",PICKER"
+          "3002","table",,["No"],"10007","Is Sensitive","PICKER"
+          "7000","policy","PII Policy",,"3","Title","TEXT"
+          "7000","policy","2025-11-05",,"10010","Review Date","DATE"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: customfieldvalue
+
+    rdbms_datasources:
+      name: rdbms_datasources
+      displayName: RDBMS Datasources
+      description: |
+        Each row represents a single data source connection configured in Alation.
+        Data sources are database connections (PostgreSQL, MySQL, Oracle, etc.) that
+        Alation connects to for metadata extraction, profiling, and query execution.
+
+        Key use cases:
+        - Identify all database connections and their types
+        - Track datasource ownership and collaborators
+        - Monitor datasource configuration and feature flags
+        - Link datasources to their schemas and tables
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: |
+            Timestamp when the datasource was first created in Alation.
+            
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: |
+            Timestamp when the datasource metadata was last updated.
+            
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: |
+            Soft-delete timestamp if the datasource was removed.
+            
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: |
+            Soft-delete flag indicating logical deletion.
+            
+          type: boolean
+        - name: ds_id
+          displayName: Datasource ID
+          description: |
+            Unique identifier for the datasource.
+            
+            This is the primary identifier used in relationships with schemas and tables.
+          type: numeric
+        - name: title
+          displayName: Title
+          description: |
+            Human-friendly display title for the datasource.
+            
+          type: text
+        - name: name
+          displayName: Name
+          description: |
+            Technical name of the datasource as configured.
+            
+          type: text
+        - name: description
+          displayName: Description
+          description: |
+            Business description of the datasource.
+            
+          type: text
+        - name: type
+          displayName: Datasource Type
+          description: |
+            Type of database system (e.g., 'postgres', 'mysql', 'oracle', 'snowflake').
+            
+            Common values: postgres, mysql, oracle, snowflake, redshift, bigquery, etc.
+          type: text
+        - name: uri
+          displayName: Connection URI
+          description: |
+            JDBC connection string or URI for the datasource.
+            
+            Format typically: jdbc:dbtype://host:port/database
+          type: text
+        - name: private
+          displayName: Private
+          description: |
+            Visibility flag - if true, datasource is restricted to specific users/groups.
+            
+            Defaults to false.
+          type: boolean
+        - name: enabled_in_compose
+          displayName: Enabled in Compose
+          description: |
+            Whether this datasource is available for use in Alation Compose (query editor).
+            
+            Defaults to false.
+          type: boolean
+        - name: is_virtual
+          displayName: Is Virtual
+          description: |
+            Whether this is a virtual datasource (not a real database connection).
+            
+            Virtual datasources are used for organizing objects without actual connections.
+          type: boolean
+        - name: owners
+          displayName: Owner User IDs
+          description: |
+            Array of user IDs who are owners of this datasource.
+            
+            References users.user_id. Can be joined with users table.
+          type: array
+        - name: user_collaborators
+          displayName: User Collaborator IDs
+          description: |
+            Array of user IDs who are collaborators (non-owner contributors).
+            
+            References users.user_id.
+          type: array
+        - name: group_collaborators
+          displayName: Group Collaborator IDs
+          description: |
+            Array of group IDs that are collaborators.
+            
+            References alation_group.group_id.
+          type: array
+        - name: builtin_datasource
+          displayName: Built-in Datasource
+          description: |
+            Identifier if this is a built-in Alation datasource (e.g., Alation Analytics).
+            
+            NULL for user-created datasources.
+          type: text
+        - name: datasource_url
+          displayName: Datasource URL
+          description: |
+            Direct link to the datasource's page in the Alation catalog.
+            
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","ds_id","title","name","description","type","uri","private","enabled_in_compose","is_virtual","owners","user_collaborators","group_collaborators","builtin_datasource","datasource_url"
+          "2024-01-15 10:00:00+00","2025-06-20 14:30:00+00",,false,12,"Production Warehouse","prod_dwh","Main production data warehouse","postgres","jdbc:postgresql://prod-db.company.com:5432/warehouse",false,true,false,"{102,105}","{110,112}","{101}",,"https://alation/data/12"
+          "2024-03-10 09:15:00+00","2025-07-01 11:00:00+00",,false,15,"Analytics Sandbox","analytics_sandbox","Sandbox environment for analytics","snowflake","jdbc:snowflake://company.snowflakecomputing.com",true,true,false,"{102}","{}","{102}",,"https://alation/data/15"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: rdbms_datasources
+
+    rdbms_schemas:
+      name: rdbms_schemas
+      displayName: RDBMS Schemas
+      description: |
+        Each row represents a database schema or container within a datasource.
+        Schemas are logical groupings of tables, views, and other database objects.
+
+        Key use cases:
+        - Browse schemas within datasources
+        - Track schema-level metadata and descriptions
+        - Link schemas to their parent datasources and child tables
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: |
+            Timestamp when the schema was first cataloged.
+            
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: |
+            Timestamp when the schema metadata was last updated.
+            
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: |
+            Soft-delete timestamp if the schema was removed.
+            
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: |
+            Soft-delete flag indicating logical deletion.
+            
+          type: boolean
+        - name: schema_id
+          displayName: Schema ID
+          description: |
+            Unique identifier for the schema.
+            
+            Used in relationships with tables and columns.
+          type: numeric
+        - name: ds_id
+          displayName: Datasource ID
+          description: |
+            Foreign key to the parent datasource.
+            
+            References rdbms_datasources.ds_id.
+          type: numeric
+        - name: name
+          displayName: Name
+          description: |
+            Technical name of the schema as it appears in the database.
+            
+          type: text
+        - name: title
+          displayName: Title
+          description: |
+            Human-friendly display title for the schema.
+            
+          type: text
+        - name: description
+          displayName: Description
+          description: |
+            Business description of the schema.
+            
+          type: text
+        - name: db_comment
+          displayName: Database Comment
+          description: |
+            Comment string pulled from the underlying database system.
+            
+          type: text
+        - name: excluded
+          displayName: Excluded
+          description: |
+            If true, this schema is excluded from indexing/profiling.
+            
+            Defaults to false.
+          type: boolean
+        - name: db_catalog_name
+          displayName: DB Catalog Name
+          description: |
+            Name of the database catalog (for systems with 3-level namespacing).
+            
+            Example: in SQL Server or Databricks with catalog.schema.table structure.
+          type: text
+        - name: original_name
+          displayName: Original Name
+          description: |
+            Original name before any renaming in Alation.
+            
+          type: text
+        - name: schema_url
+          displayName: Schema URL
+          description: |
+            Direct link to the schema's page in the Alation catalog.
+            
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","schema_id","ds_id","name","title","description","db_comment","excluded","db_catalog_name","original_name","schema_url"
+          "2024-02-01 08:00:00+00","2025-06-15 10:30:00+00",,false,321,12,"sales","Sales Schema","Sales and orders data","Schema containing sales transactional data",false,,"sales","https://alation/schema/321"
+          "2024-02-01 08:15:00+00","2025-06-15 10:45:00+00",,false,322,12,"marketing","Marketing Schema","Marketing campaign data",,false,,"marketing","https://alation/schema/322"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: rdbms_schemas
+
+    alation_group:
+      dataAccess:
+        - qualifiedName:
+            database: DB_NAME_TO_BE_REPLACED_HERE
+            schema: public
+            table: alation_group
+          type: SQL
+      description: |
+        Contains group definitions, permissions, and metadata for organizing
+        users and access control
+      displayName: Alation Groups
+      name: alation_group
+      schema:
+        - name: ts_created
+          displayName: Group Created Date
+          description: Timestamp when the group was originally created in the Alation system.
+          type: datetime
+        - name: ts_updated
+          displayName: Group Updated Date
+          description: Timestamp when the group was last modified in the Alation system. NULL if never updated.
+          type: datetime
+        - name: ts_deleted
+          displayName: Group Deleted Date
+          description: Timestamp when the group was deleted from the Alation system. NULL if the group is still active.
+          type: datetime
+        - name: deleted
+          displayName: Is Deleted
+          description: Boolean flag indicating whether the group has been deleted. Used for soft deletion tracking.
+          type: boolean
+        - name: group_id
+          displayName: Group ID
+          description: Unique identifier for the group in the source Alation system. Links to the operational group record.
+          type: numeric
+        - name: group_name
+          displayName: Group Name
+          description: Display name of the group as shown in the Alation interface. Maximum 150 characters.
+          type: text
+        - name: email
+          displayName: Group Email
+          description: Email address associated with the group, used for notifications and communications. Maximum 254 characters.
+          type: text
+        - name: display_name
+          displayName: Group Display Name
+          description: Alternative display name for the group. May be used for longer descriptive names or formatted display purposes.
+          type: text
+        - name: groupprofile_id
+          displayName: Group Profile ID
+          description: Foreign key reference to an associated group profile record, if one exists. NULL if no profile is configured.
+          type: numeric
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","group_id","group_name","email","display_name","groupprofile_id"
+          "2024-01-10 09:00:00","2024-06-15 14:30:00",,"false",101,"Data Engineering Team","data-eng@company.com","Data Engineering Team",201
+          "2024-02-20 11:15:00","2024-07-10 16:45:00",,"false",102,"Analytics Guild","analytics@company.com","Analytics Guild",202
+          "2023-12-05 13:20:00",,"2024-12-01 09:00:00","true",103,"Legacy Project Team","legacy@company.com","Legacy Project Team - Deprecated",
+
+    user_group_membership:
+      dataAccess:
+        - qualifiedName:
+            database: DB_NAME_TO_BE_REPLACED_HERE
+            schema: public
+            table: user_group_membership
+          type: SQL
+      description: |
+        Junction table that defines relationships between users and groups,
+        managing group memberships and roles
+      displayName: User Group Membership
+      name: user_group_membership
+      sample:
+        data: |
+          user_id,group_id
+          1,1
+          1,2
+          2,1
+          2,3
+          3,1
+        type: mock
+      schema:
+        - description: Foreign key reference to users table
+          displayName: User ID
+          name: user_id
+          type: integer
+        - description: Foreign key reference to alation_group table
+          displayName: Group ID
+          name: group_id
+          type: integer
+
+    article:
+      name: article
+      displayName: Articles
+      description: |
+        Each row represents an article or documentation page authored in Alation.
+        Articles are rich-text documents used for knowledge sharing, documentation,
+        and collaboration within the catalog.
+
+        Key use cases:
+        - Find documentation and knowledge base articles
+        - Track article authors and editors
+        - Manage article access permissions
+        - Link articles to catalog objects via custom fields
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: |
+            Timestamp when the article was first created.
+            
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: |
+            Timestamp when the article was last updated.
+            
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: |
+            Soft-delete timestamp if the article was removed.
+            
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: |
+            Soft-delete flag indicating logical deletion.
+            
+          type: boolean
+        - name: article_id
+          displayName: Article ID
+          description: |
+            Unique identifier for the article.
+            
+            Primary identifier used in relationships.
+          type: numeric
+        - name: title
+          displayName: Title
+          description: |
+            Article title/heading.
+            
+          type: text
+        - name: article_text
+          displayName: Article Text
+          description: |
+            Full HTML content of the article.
+            
+            Contains rich-text formatted content.
+          type: text
+        - name: user_id
+          displayName: Author User ID
+          description: |
+            User ID of the article's original author.
+            
+            Foreign key reference to users.user_id.
+          type: numeric
+        - name: private
+          displayName: Private
+          description: |
+            Whether the article is private (restricted visibility).
+            
+          type: boolean
+        - name: private_edit
+          displayName: Private Edit
+          description: |
+            Whether editing is restricted to specific users.
+            
+          type: boolean
+        - name: allowed_users
+          displayName: Allowed User IDs
+          description: |
+            Array of user IDs who can view this private article.
+            
+            References users.user_id.
+          type: array
+        - name: allowed_groups
+          displayName: Allowed Group IDs
+          description: |
+            Array of group IDs who can view this private article.
+            
+            References alation_group.group_id.
+          type: array
+        - name: parent_id
+          displayName: Parent Article ID
+          description: |
+            Reference to parent article if this is a child/sub-article.
+            
+            Used for hierarchical article organization.
+          type: numeric
+        - name: document_id
+          displayName: Document ID
+          description: |
+            Reference to associated document, if linked.
+            
+          type: numeric
+        - name: article_url
+          displayName: Article URL
+          description: |
+            Direct link to the article page in Alation.
+            
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","article_id","title","article_text","user_id","private","private_edit","allowed_users","allowed_groups","parent_id","document_id","article_url"
+          "2025-01-10 10:00:00+00","2025-06-15 14:20:00+00",,false,5001,"Data Governance Policy","<h1>Our Data Governance Framework</h1><p>This document outlines...</p>",102,false,false,"{}","{}",,,150,"https://alation/article/5001"
+          "2025-02-05 09:30:00+00","2025-06-20 16:45:00+00",,false,5002,"SQL Best Practices","<h1>Writing Efficient SQL</h1><p>Tips for query optimization...</p>",105,true,true,"{102,110}","{101}",,,"https://alation/article/5002"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: article
+
+    glossaries:
+      name: glossaries
+      displayName: Glossaries
+      description: |
+        Each row represents a glossary (folder) that organizes business terms.
+        Glossaries are hierarchical containers for grouping related terms and
+        building business vocabularies.
+
+        Key use cases:
+        - Browse glossary hierarchies and term organization
+        - Track glossary ownership and stewardship
+        - Link glossaries to terms and child glossaries
+        - Manage business vocabulary structure
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: |
+            Timestamp when the glossary was created.
+            
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: |
+            Timestamp when the glossary was last updated.
+            
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: |
+            Soft-delete timestamp if the glossary was removed.
+            
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: |
+            Soft-delete flag indicating logical deletion.
+            
+          type: boolean
+        - name: glossary_id
+          displayName: Glossary ID
+          description: |
+            Unique identifier for the glossary.
+            
+            Primary identifier used in relationships.
+          type: numeric
+        - name: glossary_title
+          displayName: Glossary Title
+          description: |
+            Display title of the glossary.
+            
+          type: text
+        - name: glossary_description
+          displayName: Glossary Description
+          description: |
+            Description of the glossary's purpose and contents.
+            
+          type: text
+        - name: created_by_id
+          displayName: Created By User ID
+          description: |
+            User ID of the glossary creator.
+            
+            Foreign key reference to users.user_id.
+          type: numeric
+        - name: parent_glossary_id
+          displayName: Parent Glossary ID
+          description: |
+            Reference to parent glossary if this is a sub-glossary.
+            
+            Used to build glossary hierarchies.
+          type: numeric
+        - name: child_glossaries
+          displayName: Child Glossary IDs
+          description: |
+            Array of child glossary IDs contained within this glossary.
+            
+            References glossaries.glossary_id.
+          type: array
+        - name: child_terms
+          displayName: Child Term IDs
+          description: |
+            Array of term IDs directly contained in this glossary.
+            
+            References terms.term_id.
+          type: array
+        - name: linked_terms
+          displayName: Linked Term IDs
+          description: |
+            Array of term IDs linked/associated with this glossary.
+            
+            References terms.term_id.
+          type: array
+        - name: glossary_url
+          displayName: Glossary URL
+          description: |
+            Direct link to the glossary page in Alation.
+            
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","glossary_id","glossary_title","glossary_description","created_by_id","parent_glossary_id","child_glossaries","child_terms","linked_terms","glossary_url"
+          "2024-06-01 10:00:00+00","2025-06-15 12:00:00+00",,false,301,"Business Glossary","Central repository of business terms and definitions",102,,"{302,303}","{7001,7002,7003}","{7010,7011}","https://alation/glossary/301"
+          "2024-06-05 11:00:00+00","2025-06-20 14:30:00+00",,false,302,"Sales Terms","Glossary for sales-related terminology",102,301,"{}","{7001}","{}","https://alation/glossary/302"
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: glossaries
+
+    users:
+      dataAccess:
+        - qualifiedName:
+            database: DB_NAME_TO_BE_REPLACED_HERE
+            schema: public
+            table: users
+          type: SQL
+      name: users
+      displayName: Users
+      description: >
+        The users table represents the current state of every user account in Alation.
+        Each row corresponds to the current state of a single user account.
+        Users who have been suspended are still present in this table.
+        There is only one row per user, as the users properties change the row for that user is updated in place.
+      schema:
+        - name: date_joined
+          displayName: Date Joined
+          description: The timestamp indicating when the user account was first created in Alation—either by signing up, logging in for the first time via single sign-on, or being provisioned automatically through a mechanism like SCIM.
+          type: datetime
+        - name: user_url
+          displayName: User Profile Link
+          description: Link to the user’s profile page in Alation.
+          type: text
+        - name: suspended
+          displayName: Suspended
+          description: >
+            Indicates if a user account is currently suspended. This happens when
+            their access to the catalog is revoked. This is usually because they
+            have left the organization or don't want to pay for their license
+            anymore. Suspended users can be reactivated later.
+          type: boolean
+        - name: user_id
+          displayName: User ID
+          description: >
+            Unique identifier for each user account.
+          type: numeric
+        - name: user_email
+          displayName: User Email
+          description: >
+            Email address of the user. This is the email that Alation would send notifications
+            to for this user.
+          type: text
+        - name: user_name
+          displayName: User Name
+          description: >
+              Unique identifier the user logs in with (often an email address, but may be another username depending on the authentication mechanism).
+
+          type: text
+        - name: display_name
+          displayName: Display Name
+          description: >
+              The name displayed in the Alation UI to represent the user. Often the user's full name but the user can select anything to be their display name.
+          type: text
+        - name: ts_suspended
+          displayName: Suspended Date
+          description: Date and time when the user account was suspended.
+                       This value will be NULL if the user is active (not suspended) or has never been suspended.
+          type: datetime
+        - name: last_login
+          displayName: Last Login Date
+          description: >
+                      Timestamp of the user’s most recent successful authentication.
+                      Once authenticated a user may continue to use the same authentication session for days or weeks depending on the configuration.
+                      During that time the user does not need to login again and this value will not be updated.
+          type: datetime
+        - name: is_active
+          displayName: Is Licensed
+          description: >
+            True if the user currently has an active license to use the Alation platform.
+            Users may be licensed but not actually actively using the platform.
+            A license gives them the entitlement to use the platform.
+          type: boolean
+        - name: user_type
+          displayName: User Type
+          description: |
+            The role or permission level assigned to the user in Alation.
+            
+
+            **Possible values:**
+            - 'Explorer': Can explore and use the catalog
+            - 'Viewer': Read-only access to the catalog
+            - 'Catalog Admin': Administrative privileges over catalog content
+            - 'Source Admin': Can manage data source connections
+            - 'Server Admin': Full administrative privileges
+            - 'Steward': Data stewardship responsibilities
+            - 'Composer': Can create and manage queries/compositions
+
+            This determines what actions the user can perform in the Alation platform.
+          type: text
+      sample:
+        type: mock
+        data: |
+          "user_id","user_name","display_name","user_email","is_active","suspended","user_type","date_joined","last_login","ts_suspended","user_url"
+          101,"jdoe","john doe","jdoe@example.com",true,false,"Explorer","2024-01-10 09:00:00","2025-07-09 08:30:00",,"https://alation/catalog/user/101"
+          102,"asmith","alice smith","asmith@example.com",true,false,"Catalog Admin","2023-11-22 13:15:00","2025-07-08 17:45:00",,"https://alation/catalog/user/102"
+          103,"mbrown","michael brown","mbrown@example.com",false,true,"Viewer","2023-03-05 10:00:00","2024-12-01 09:30:00","2025-01-05 00:00:00","https://alation/catalog/user/103"
+
+    business_policy:
+      name: business_policy
+      displayName: Policies
+      description: >
+        Each row represents a single policy object authored in Alation catalog.
+      schema:
+        - name: ts_created
+          displayName: Created At
+          description: Timestamp when the policy was created.
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: Timestamp when the policy was last updated.
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: Soft-delete timestamp if the policy was removed.
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: Soft-delete flag indicating logical deletion of the policy.
+          type: boolean
+        - name: policy_id
+          displayName: Policy ID
+          description: |
+            Stable identifier of the policy object.
+          type: numeric
+        - name: owner_id
+          displayName: Owner ID
+          description: |
+            User ID of the policy owner/author.
+            Foreign key reference to users.user_id.
+            Join with users table to get owner details.
+          type: numeric
+        - name: policy_type_id
+          displayName: Policy Type ID
+          description: Identifier of the policy type.
+          type: numeric
+        - name: policy_type_name
+          displayName: Policy Type
+          description: Human-readable policy type name.
+          type: text
+        - name: title
+          displayName: Title
+          description: Policy title.
+          type: text
+        - name: description
+          displayName: Description
+          description: Free-text description of the policy (may contain HTML).
+          type: text
+      sample:
+        type: mock
+        data: |
+          "ts_created","ts_updated","ts_deleted","deleted","policy_id","owner_id","policy_type_id","policy_type_name","title","description"
+          "2025-06-01 10:00:00+00","2025-06-15 12:00:00+00",,false,5001,102,10,"Data Retention","Customer Data Retention Policy","Specifies how long customer PII is stored."
+          "2025-05-20 09:30:00+00","2025-06-02 16:45:00+00",,false,5002,102,20,"Access Control","Least-privilege access standard","Defines minimal access for roles."
+      dataAccess:
+        - qualifiedName:
+            database: DB_NAME_TO_BE_REPLACED_HERE
+            schema: public
+            table: business_policy
+          type: SQL
+
+    terms:
+      name: terms
+      displayName: Glossary Terms
+      description: >
+        Each row represents a glossary term or a document authored in the Alation catalog.
+      schema:
+        - name: term_id
+          displayName: Term ID
+          description: Stable identifier of the glossary term object.
+          type: numeric
+        - name: title
+          displayName: Title
+          description: Term title (display name).
+          type: text
+        - name: description
+          displayName: Description
+          description: Free-text description of the term (may include HTML).
+          type: text
+        - name: term_url
+          displayName: Catalog URL
+          description: Link to the term’s page in the Alation catalog.
+          type: text
+        - name: term_type_id
+          displayName: Term Type ID
+          description: Identifier of the term’s type/category.
+          type: numeric
+        - name: term_type_name
+          displayName: Term Type
+          description: Human-readable term type name.
+          type: text
+        - name: created_by_id
+          displayName: Created By (User ID)
+          description: User ID of the author who created the term.
+          type: numeric
+        - name: document_hub_id
+          displayName: Document Hub ID
+          description: Optional reference to the associated document hub.
+          type: numeric
+        - name: ts_created
+          displayName: Created At
+          description: Timestamp when the term was created.
+          type: datetime
+        - name: ts_updated
+          displayName: Last Updated At
+          description: Timestamp when the term was last updated.
+          type: datetime
+        - name: ts_deleted
+          displayName: Deleted At
+          description: Soft-delete timestamp if the term was removed.
+          type: datetime
+        - name: deleted
+          displayName: Deleted
+          description: Soft-delete flag indicating logical deletion of the term.
+          type: boolean
+        - name: private
+          displayName: Private
+          description: |
+            Indicates if the term/document has restricted visibility.
+            
+            When true, only authorized users can view this term.
+          type: boolean
+        - name: article_id
+          displayName: Article ID
+          description: |
+            Reference to an associated article, if the term is linked to an article.
+            NULL if no article association exists.
+          type: numeric
+        - name: linked_glossaries
+          displayName: Linked Glossaries
+          description: |
+            Array of glossary IDs that this term is linked to or appears in.
+            Example: [101, 202, 303] indicating the term appears in three glossaries.
+            Empty array [] if the term is not linked to any glossaries.
+          type: array
+        - name: parent_term_id
+          displayName: Parent Term ID
+          description: |
+            Reference to the parent term if this term is part of a hierarchical structure.
+            NULL if this is a top-level term with no parent.
+            Used to build term hierarchies/taxonomies.
+          type: numeric
+        - name: parent_glossary_id
+          displayName: Parent Glossary ID
+          description: |
+            Reference to the parent glossary/folder containing this term.
+            Links to the glossary that organizes this term.
+            NULL if the term is not organized within a glossary.
+          type: numeric
+      sample:
+        type: mock
+        data: |
+          "term_id","title","description","term_url","term_type_id","term_type_name","created_by_id","document_hub_id","ts_created","ts_updated","ts_deleted","deleted","private","article_id","linked_glossaries","parent_term_id","parent_glossary_id"
+          7001,"Customer","A person or entity that purchases goods or services.","https://alation/catalog/term/7001",10,"Business Term",102,501,"2025-06-10 09:00:00+00","2025-07-01 12:00:00+00",,false,false,,"{101,202}",,301
+          7002,"Order","A commercial transaction record.","https://alation/catalog/term/7002",10,"Business Term",102,,"2025-06-12 11:30:00+00","2025-07-02 08:15:00+00",,false,false,150,"{101}",7001,301
+      dataAccess:
+      - type: SQL
+        qualifiedName:
+          database: DB_NAME_TO_BE_REPLACED_HERE
+          schema: public
+          table: terms
+
+    bi_connection_column:
+      name: bi_connection_column
+      displayName: BI Connection Columns
+      description: 'Connection columns represent transformations that are used to
+        populate
+
+        reports via connections.'
+      schema:
+      - name: name
+        displayName: Name
+        description: The user-friendly name of the object.
+        type: text
+      - name: connection_fp
+        displayName: Connection Fingerprint
+        description: The Fingerprint value of the BI connection.
+        type: int8(64,0)
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: bi_connection_column_id
+        displayName: BI Conection Column Identifier
+        description: Unique identifier of a particular BI connection column.
+        type: int4(32,0)
+      - name: description_at_source
+        displayName: Description At Source
+        description: Object description on the BI Server.
+        type: text
+      - name: external_id
+        displayName: External Identifier
+        description: 'The identifier of the object as generated by the BI Server.
+          This is
+
+          used as an identifier for bulk create/update operations.'
+        type: text
+      - name: fp
+        displayName: Fingerprint
+        description: MD5 Fingerprint of the BI connection column. Generated by Alation.
+        type: int8(64,0)
+      - name: ts_updated
+        displayName: Timestamp Last Updated
+        description: Timestamp when the BI connection column was last updated.
+        type: timestamptz(6)
+      - name: source_url
+        displayName: Source URL
+        description: Path to the object on the BI Server.
+        type: text
+      - name: bi_object_type
+        displayName: BI Object Type
+        description: The type of the object, as defined by the BI Server.
+        type: text
+      - name: bi_composite_key
+        displayName: BI Composite Key
+        description: Used to query the BI Rest API, currently not used.
+        type: text
+      - name: data_type
+        displayName: Data Type
+        description: The type of the column data.
+        type: text
+      - name: measures
+        displayName: Measures
+        description: Calculated aggregate, such as the sum or average of a column.
+        type: text
+      - name: expression
+        displayName: Expression
+        description: The expression used to transform the data into a column.
+        type: text
+      - name: values
+        displayName: Values
+        description: Sample values from the column.
+        type: _text
+      - name: bi_server_id
+        displayName: BI Server ID
+        description: 'Unique identifier of the BI server this connection is associated
+
+          with.'
+        type: int8(64,0)
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: 'Timestamp when the BI connection column was created on the BI
+
+          server.'
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: 'Timestamp when the BI connection column was last updated on
+          the BI
+          server.'
+        type: timestamptz(6)
+      - name: deleted
+        displayName: Deleted
+        description: Boolean value for whether the BI connection column has been deleted.
+        type: bool
+      - name: ts_created
+        displayName: Timestamp Created
+        description: 'Timestamp when the BI connection column was created, pulled
+          from
+          Rosemeta.'
+        type: timestamptz(6)
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_connection_column
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/9/overview
+      x-relationships:
+      - name: bi_connection_column_to_bi_datasources
+        rightTable: bi_datasources
+        expression: bi_connection_column.fp = bi_datasources.bi_connections
+        sqlDialect: postgres
+        leftNullable: false
+        rightNullable: false
+        notes: 'Join between bi_connection_column and bi_datasources tables based
+          on
+
+          connection fingerprint.'
+      - name: bi_connection_column_to_bi_datasource_columns
+        rightTable: bi_datasource_columns
+        expression: 'bi_connection_column.fp =
+
+          bi_datasource_columns.bi_connection_columns'
+        sqlDialect: postgres
+        leftNullable: false
+        rightNullable: false
+        notes: 'Join between bi_connection_column and bi_datasource_columns tables
+
+          based on connection column fingerprint.'
+      - name: bi_connection_column_to_bi_server
+        rightTable: bi_server
+        expression: bi_connection_column.bi_server_id = bi_server.bi_server_id
+        sqlDialect: postgres
+        leftNullable: false
+        rightNullable: false
+        notes: 'Join between bi_connection_column and bi_server tables based on BI
+
+          server ID.'
+    bi_datasource_columns:
+      name: bi_datasource_columns
+      displayName: BI Datasource Columns
+      description: 'Datasource Columns are transformations on data used to populate
+        reports
+
+        via these sources.'
+      schema:
+      - name: description_at_source
+        displayName: Description At Source
+        description: Object description on the BI Server.
+        type: text
+      - name: deleted
+        displayName: Deleted
+        description: Boolean value for whether the BI datasource column has been deleted.
+        type: bool
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: ts_updated
+        displayName: Timestamp Updated
+        description: Timestamp when the BI datasource column was last updated.
+        type: timestamptz(6)
+      - name: bi_ds_fp
+        displayName: ''
+        description: Fingerprint value of the BI datasource.
+        type: int8(64,0)
+      - name: bi_ds_column_id
+        displayName: BI Datasource Column Identifier
+        description: Unique identifier of the BI datasource column.
+        type: int4(32,0)
+      - name: name
+        displayName: Name
+        description: The user-friendly name of the object.
+        type: text
+      - name: external_id
+        displayName: External Identifier
+        description: 'The identifier of the object as generated by the BI Server.
+          This is
+
+          used as an identifier for bulk create/update operations.'
+        type: text
+      - name: fp
+        displayName: Fingerprint
+        description: MD5 Fingerprint of the BI datasource column. Generated by Alation.
+        type: int8(64,0)
+      - name: bi_server_id
+        displayName: BI Server ID
+        description: 'Unique identifier of the BI server this datasource column is
+
+          associated with.'
+        type: int4(32,0)
+      - name: bi_object_type
+        displayName: BI Object Type
+        description: The type of the object, as defined by the BI Server.
+        type: text
+      - name: source_url
+        displayName: Source URL
+        description: Path to the object on the BI Server.
+        type: text
+      - name: column_values
+        displayName: Column Values
+        description: Array of sample values from the column.
+        type: _text
+      - name: expression
+        displayName: Expression
+        description: The expression used to transform the data into a column.
+        type: text
+      - name: data_type
+        displayName: Data Type
+        description: The type of the column data.
+        type: text
+      - name: role
+        displayName: Role
+        description: The role of the column.
+        type: text
+      - name: bi_report_columns
+        displayName: BI Report Columns
+        description: Array of report column fingerprint values.
+        type: _int8
+      - name: bi_connection_columns
+        displayName: BI Connection Columns
+        description: Array of connection column fingerprint values.
+        type: _int8
+      - name: bi_sub_columns
+        displayName: BI Sub Columns
+        description: Array of report sub datasource column fingerprint values.
+        type: _int8
+      - name: bi_ds_column_url
+        displayName: BI Datasource Column URL
+        description: URL of the datasource column as used in the data catalog.
+        type: varchar(1000)
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: 'Timestamp when the BI datasource column was created on the BI
+
+          server.'
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: 'Timestamp when the BI datasource column was last updated on
+          the BI
+
+          server.'
+        type: timestamptz(6)
+      - name: ts_created
+        displayName: Timestamp Created
+        description: 'Timestamp when the BI datasource column was created, pulled
+          from
+
+          Rosemeta.'
+        type: timestamptz(6)
+      - name: steward
+        displayName: Steward
+        description: 'Array of user and group IDs that have been assigned as stewards
+          to
+
+          this BI column.'
+        type: _text
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_datasource_columns
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/10/overview
+    bi_datasources:
+      name: bi_datasources
+      displayName: BI Datasources
+      description: "BI Datasources represent the data on which the BI reports are\
+        \ created.\n \n\n  If Alation is aware of the data source, you may find lineage\
+        \ between the data source and the BI data source in the UI."
+      schema:
+      - name: ts_updated
+        displayName: Timestamp Updated
+        description: Timestamp when the BI datasource was last updated.
+        type: timestamptz(6)
+      - name: description_at_source
+        displayName: Description At Source
+        description: Object description on the BI Server.
+        type: text
+      - name: deleted
+        displayName: Deleted
+        description: Boolean value for whether the BI datasource has been deleted.
+        type: bool
+      - name: bi_ds_id
+        displayName: BI Datasource Identifier
+        description: Unique identifier of the BI datasource.
+        type: int4(32,0)
+      - name: name
+        displayName: Name
+        description: The user-friendly name of the object.
+        type: text
+      - name: bi_reports
+        displayName: BI Reports
+        description: Array of report fingerprint values.
+        type: _int8
+      - name: bi_connections
+        displayName: BI Connections
+        description: Array of connection fingerprint values.
+        type: _int8
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: external_id
+        displayName: External Identifier
+        description: 'The identifier of the object as generated by the BI Server.
+          This is
+
+          used as an identifier for bulk create/update operations.'
+        type: text
+      - name: fp
+        displayName: Fingerprint
+        description: MD5 Fingerprint of the BI datasource. Generated by Alation.
+        type: int8(64,0)
+      - name: data_source_type
+        displayName: Data Source Type
+        description: DEPRECATED to be removed.
+        type: text
+      - name: data_source_type_id
+        displayName: Data Source Type Identifier
+        description: DEPRECATED to be removed.
+        type: int4(32,0)
+      - name: bi_server_id
+        displayName: BI Server Identifier
+        description: 'Unique identifier of the BI server this datasource is associated
+
+          with.'
+        type: int4(32,0)
+      - name: bi_object_type
+        displayName: BI Object Type
+        description: The type of the object, as defined by the BI Server.
+        type: text
+      - name: parent_bi_folder_fp
+        displayName: Parent Bi Folder Fingerprint
+        description: 'Fingerprint value of the BI folder that the datasource is associated
+
+          with.'
+        type: int8(64,0)
+      - name: source_url
+        displayName: Source URL
+        description: Path to the object on the BI Server.
+        type: text
+      - name: bi_ds_url
+        displayName: BI Datasource URL
+        description: URL of the datasource as used in the data catalog.
+        type: varchar(1000)
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: Timestamp when the BI datasource was created on the BI server.
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: Timestamp when the BI datasource was last updated on the BI server.
+        type: timestamptz(6)
+      - name: ts_created
+        displayName: Timestamp Created
+        description: Timestamp when the BI datasource was created, pulled from Rosemeta.
+        type: timestamptz(6)
+      - name: steward
+        displayName: Steward
+        description: 'Array of user and group IDs that have been assigned as stewards
+          to
+
+          this BI source.'
+        type: _text
+      - name: description
+        displayName: Description
+        description: Object description on the BI Server.
+        type: text
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_datasources
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/11/overview
+    bi_folder:
+      name: bi_folder
+      displayName: BI Folder
+      description: "Folders are an important concept in our Generalized BI Model (GBM).\
+        \ Just\nlike in file systems, folders can contain other folders, recursively,\n\
+        until \"finally\" containing reports.\n \n\n  In your BI system, you may know\n\
+        \  \n   Projects, Workbooks\n  \n  , or\n  \n   Sites\n  \n  . All of these\
+        \ map to Alation BI Folders.\n \n\n  Folders can have Stewards and other custom\
+        \ fields in Alation, which will be dynamically generated in the ETL and appear\
+        \ as columns in this table."
+      schema:
+      - name: ts_updated
+        displayName: Timestamp Last Updated
+        description: Timestamp when the BI folder was last updated.
+        type: timestamptz(6)
+      - name: deleted
+        displayName: Deleted
+        description: Boolean value on whether the BI folder has been soft deleted.
+        type: bool
+      - name: description_at_source
+        displayName: Description At Source
+        description: Object description on the BI Server.
+        type: text
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: bi_folder_id
+        displayName: BI Folder Identifier
+        description: Unique identifier of the BI folder.
+        type: int4(32,0)
+      - name: name
+        displayName: Name
+        description: The user-friendly name of the object.
+        type: text
+      - name: fp
+        displayName: Fingerprint
+        description: MD5 Fingerprint of the BI folder. Generated by Alation.
+        type: int8(64,0)
+      - name: source_url
+        displayName: Source URL
+        description: Path to the object on the BI Server.
+        type: text
+      - name: bi_object_type
+        displayName: BI Object Type
+        description: The type of the object, as defined by the BI Server.
+        type: text
+      - name: full_path
+        displayName: Full Path
+        description: 'Full path from Site to bi_object_type.For example: Site or Site
+          /
+
+          Folder or Site / Folder / Workbook'
+        type: text
+      - name: parent_bi_folder_fp
+        displayName: Parent Bi Folder Fingerprint
+        description: 'Contains the fingerprint value of the parent BI folder if this
+
+          folder is a sub folder (child).'
+        type: int8(64,0)
+      - name: bi_folder_url
+        displayName: BI Folder URL
+        description: URL of the folder as used in the data catalog.
+        type: varchar(1000)
+      - name: external_id
+        displayName: External Identifier
+        description: 'The identifier of the object as generated by the BI Server.
+          This is
+
+          used as an identifier for bulk create/update operations.'
+        type: text
+      - name: owner
+        displayName: Owner
+        description: The username of the BI folder owner.
+        type: text
+      - name: num_reports
+        displayName: Number of Reports
+        description: Number of reports associated with the folder.
+        type: int4(32,0)
+      - name: num_report_accesses
+        displayName: Number of Report Accesses
+        description: Number of accesses to the reports associated with this folder.
+        type: int4(32,0)
+      - name: bi_server_id
+        displayName: BI Server Identifier
+        description: Unique identifier of the BI server this folder is associated
+          with.
+        type: int4(32,0)
+      - name: bi_composite_key
+        displayName: BI Composite Key
+        description: Used to query the BI Rest API, currently not used.
+        type: text
+      - name: in_extraction_list
+        displayName: In Extraction List
+        description: 'Boolean value for whether the folder is in the extraction list.
+          If
+
+          this value is false the folder will not get extracted during MDE.'
+        type: bool
+      - name: is_extractable
+        displayName: Is Extractable
+        description: Boolean value for whether the folder is extractable.
+        type: bool
+      - name: popularity
+        displayName: Popularity
+        description: Percentage value to show popularity. Value is from 0 to 100.
+        type: float8
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: Timestamp when the BI folder was created on the BI server.
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: Timestamp when the BI folder was last updated on the BI server.
+        type: timestamptz(6)
+      - name: ts_created
+        displayName: Timestamp Created
+        description: Timestamp when the BI folder was created, pulled from Rosemeta.
+        type: timestamptz(6)
+      - name: steward
+        displayName: Steward
+        description: 'Array of user and group IDs that have been assigned as stewards
+          to
+
+          this BI folder.'
+        type: _text
+      - name: description
+        displayName: Description
+        description: Object description on the BI Server.
+        type: text
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_folder
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/12/overview
+    bi_report:
+      name: bi_report
+      displayName: BI Report
+      description: "Reports represent a display of data within a BI object.\n \n\n\
+        public.bi_report.report_type (Report Type)\n  can be SIMPLE for individual\
+        \ reports or DASHBOARD for collections of reports. Parent-child relationships\
+        \ are shown using\n  public.bi_report.parent_bi_reports (Parent BI Reports)\n\
+        \  , but the IDs relate to\n  public.bi_report.fp (Fingerprint)\n  . The same\
+        \ is true for related\n  public.bi_folder (BI Folder)\n\n\n  Many BI objects\
+        \ already have a meaningful name, so Alation does not offer a separate title\
+        \ field. This is a rare exception, since the rule is: the most important fields\
+        \ in Alation are title and description."
+      schema:
+      - name: name
+        displayName: Name
+        description: The user-friendly name of the object.
+        type: text
+      - name: bi_report_id
+        displayName: BI Report Identifier
+        description: Unique identifier of the BI report.
+        type: int4(32,0)
+      - name: deleted
+        displayName: Deleted
+        description: Boolean value on whether the BI report has been soft deleted.
+        type: bool
+      - name: steward
+        displayName: Steward
+        description: 'Array of user and group IDs that have been assigned as stewards
+          to
+
+          this BI report.'
+        type: _text
+      - name: fp
+        displayName: Fingerprint
+        description: MD5 Fingerprint of the BI report. Generated by Alation.
+        type: int8(64,0)
+      - name: ts_updated
+        displayName: Timestamp Last Updated
+        description: Timestamp when the BI report was last updated.
+        type: timestamptz(6)
+      - name: description
+        displayName: Description
+        description: Object description on the BI Server.
+        type: text
+      - name: bi_report_url
+        displayName: BI Report URL
+        description: URL of the report as used in the data catalog.
+        type: varchar(1000)
+      - name: ts_created
+        displayName: Timestamp Created
+        description: Timestamp when the BI report was created, pulled from Rosemeta.
+        type: timestamptz(6)
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: external_id
+        displayName: External Identifier
+        description: 'The identifier of the object as generated by the BI Server.
+          This is
+
+          used as an identifier for bulk create/update operations.'
+        type: text
+      - name: report_type
+        displayName: Report Type
+        description: 'The type of report, whether it is a simple chart or a dashboard
+          of
+
+          reports.'
+        type: text
+      - name: owner
+        displayName: Owner
+        description: The username of the BI report owner.
+        type: text
+      - name: source_url
+        displayName: Source URL
+        description: Path to the object on the BI Server.
+        type: text
+      - name: description_at_source
+        displayName: Description At Source
+        description: Object description on the BI Server.
+        type: text
+      - name: num_accesses
+        displayName: Number of Accesses
+        description: Number of times this report has been accessed.
+        type: int4(32,0)
+      - name: bi_object_type
+        displayName: BI Object Type
+        description: The type of the object, as defined by the BI Server.
+        type: text
+      - name: path_to_report
+        displayName: Path To Report
+        description: Full path from Site to bi_object_type. Currently not used.
+        type: text
+      - name: popularity
+        displayName: Popularity
+        description: Percentage value to show popularity. Value is from 0 to 100.
+        type: float8
+      - name: bi_server_id
+        displayName: BI Server Identifier
+        description: Unique identifier of the BI server this report is associated
+          with.
+        type: int4(32,0)
+      - name: parent_bi_folder_fp
+        displayName: Parent Bi Folder Fingerprint
+        description: 'Contains the fingerprint value of the parent BI folder this
+          report
+
+          is associated with.'
+        type: int8(64,0)
+      - name: parent_connections
+        displayName: Parent Connections
+        description: Array of parent connection fingerprint values for this report.
+        type: _int8
+      - name: parent_bi_reports
+        displayName: Parent BI Reports
+        description: Array of parent report fingerprint values for this report.
+        type: _int8
+      - name: parent_datasources
+        displayName: Parent Datasources
+        description: Array of parent datasource fingerprint values for this report.
+        type: _int8
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: Timestamp when the BI report was created on the BI server.
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: Timestamp when the BI report was last updated on the BI server.
+        type: timestamptz(6)
+      - name: related_critical_data_element
+        displayName: Related Critical Data Element
+        description: ''
+        type: _text
+      - name: number_field
+        displayName: Number Field
+        description: ''
+        type: text
+      - name: number_field_2
+        displayName: Number Field 2
+        description: ''
+        type: text
+      - name: number_field_3
+        displayName: Number Field 3
+        description: ''
+        type: text
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_report
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/13/overview
+    bi_server:
+      name: bi_server
+      displayName: BI Server
+      description: "A Datasource represents a physical source of BI Data.\n \n\n \
+        \ Most likely, you will have at most a handful of these and you won't need\
+        \ to do a lot of analysis here."
+      schema:
+      - name: ts_updated
+        displayName: Timestamp Updated
+        description: Timestamp when the BI server was last updated.
+        type: timestamptz(6)
+      - name: bi_server_id
+        displayName: BI Server Identifier
+        description: Unique identifier of the BI server.
+        type: int8(64,0)
+      - name: id
+        displayName: Identifier
+        description: Unique identifier of entry in the table.
+        type: int4(32,0)
+      - name: server_type_name
+        displayName: Server Type Name
+        description: 'The name of the BI server type. Example: tableau.'
+        type: text
+      - name: server_type
+        displayName: Server Type
+        description: 'Numeric value for BI Server type. 0 = tableau1 = microstrategy8
+          =
+
+          virtual'
+        type: int4(32,0)
+      - name: gbm_version
+        displayName: GBM Connector Version
+        description: The version number of the GBMv2 connector.
+        type: int4(32,0)
+      - name: bi_server_url
+        displayName: BI Server URL
+        description: URL of the BI server as used in the data catalog.
+        type: varchar(1000)
+      - name: ts_created
+        displayName: Timestamp Created
+        description: Timestamp when the BI server was created, pulled from Rosemeta.
+        type: timestamptz(6)
+      - name: description
+        displayName: Description
+        description: Human-curated description of the BI server.
+        type: text
+      - name: title
+        displayName: Title
+        description: Human-curated title of the BI server.
+        type: text
+      - name: steward
+        displayName: Steward
+        description: ''
+        type: _text
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          schema: public
+          table: bi_server
+        documentationUrl: https://hedgie-sme.mtse.alationcloud.com/app/table/15/overview
+    bi_report_column:
+      name: bi_report_column
+      displayName: BI Report Column
+      description: "Report Columns are data or transformations on data used to populate\
+        \ reports.\nFor Tableau, for instance, these are called measures and dimensions , and you find that in public.bi_report_column.role (Role)
+        \nFor measures, you may find the public.bi_report_column.expression (Expression)
+        If available, you can find public.bi_report_column.description_at_source (Description At Source)"
+      schema:
+      - name: id
+        displayName: Id
+        description: Unique identifier for report columns in BI systems, enabling
+          precise lineage tracking from source tables through transformations to final
+          dashboard visualizations.
+        type: int4(32,0)
+      - name: bi_report_column_id
+        displayName: Bi Report Column Id
+        description: Uniquely identifies columns within BI reports, enabling precise
+          lineage mapping and supporting cross-platform metadata synchronization for
+          business intelligence assets.
+        type: int4(32,0)
+      - name: bi_report_fp
+        displayName: Bi Report Fp
+        description: Links report columns to their parent BI reports through hash-based
+          reference, supporting accurate lineage tracking and impact analysis for
+          report changes.
+        type: int8(64,0)
+      - name: bi_server_id
+        displayName: Bi Server Id
+        description: Links report columns to their parent BI server instance, enabling
+          multi-server environment management and supporting distributed BI architecture
+          tracking.
+        type: int4(32,0)
+      - name: bi_report_column_url
+        displayName: Bi Report Column Url
+        description: Provides direct navigation links to BI report columns in source
+          systems, enabling seamless integration between catalog and reporting tools
+          for efficient cross-platform data exploration.
+        type: varchar(1000)
+      - name: name
+        displayName: Name
+        description: Stores business-friendly column labels from BI reports, bridging
+          technical database names with user-facing terminology for improved data
+          discovery.
+        type: text
+      - name: external_id
+        displayName: External Id
+        description: Maintains source system identifiers for BI report columns, enabling
+          bidirectional synchronization and supporting impact analysis when upstream
+          reports change.
+        type: text
+      - name: fp
+        displayName: Fp
+        description: Generates unique hash identifier for BI report columns, enabling
+          deduplication and supporting accurate lineage tracking across report modifications.
+        type: int8(64,0)
+      - name: ts_updated
+        displayName: Ts Updated
+        description: Tracks the most recent modification time for BI report columns,
+          enabling users to identify recently updated report metadata and supporting
+          synchronization monitoring with source BI systems.
+        type: timestamptz(6)
+      - name: source_url
+        displayName: Source Url
+        description: Provides direct access links to BI report columns in native platforms,
+          streamlining workflows by enabling navigation from catalog metadata to actual
+          field definitions.
+        type: text
+      - name: description_at_source
+        displayName: Description At Source
+        description: Preserves original column descriptions from BI source systems,
+          maintaining semantic context and supporting metadata enrichment through
+          source-to-catalog synchronization.
+        type: text
+      - name: data_type
+        displayName: Data Type
+        description: Defines data types for report columns, enabling type-aware lineage
+          tracing and helping analysts understand data transformations in BI layer
+          calculations.
+        type: text
+      - name: role
+        displayName: Role
+        description: Defines how BI report columns function in visualizations such
+          as dimension, measure, or filter, supporting semantic layer understanding
+          and report optimization.
+        type: text
+      - name: expression
+        displayName: Expression
+        description: Contains calculated field formulas and business logic from BI
+          reports, enabling impact analysis when source data changes and supporting
+          metric definition standardization.
+        type: text
+      - name: column_values
+        displayName: Column Values
+        description: Stores sample data values from BI report columns, supporting
+          data profiling and enabling business users to preview actual content without
+          querying source systems.
+        type: _text
+      - name: parent_bi_reports
+        displayName: Parent Bi Reports
+        description: Lists all reports consuming a specific column, supporting impact
+          analysis when columns change and helping identify downstream dependencies
+          for governance decisions.
+        type: _int8
+      - name: parent_datasources_columns
+        displayName: Parent Datasources Columns
+        description: Maps BI report columns to their source datasource columns, enabling
+          end-to-end lineage tracing and supporting impact analysis for upstream data
+          changes.
+        type: _int8
+      - name: bi_object_type
+        displayName: Bi Object Type
+        description: Classifies the BI report column within the source system's object
+          model, enabling accurate metadata mapping and supporting cross-platform
+          lineage analysis.
+        type: text
+      - name: created_at_on_source
+        displayName: Created At On Source
+        description: Preserves the original creation date from source BI systems for
+          report columns, maintaining temporal fidelity and supporting historical
+          metadata analysis.
+        type: timestamptz(6)
+      - name: last_updated_on_source
+        displayName: Last Updated On Source
+        description: Preserves the last modification timestamp from source BI systems
+          for report columns, enabling change detection and supporting incremental
+          metadata synchronization.
+        type: timestamptz(6)
+      - name: deleted
+        displayName: Deleted
+        description: Marks BI report columns removed from source systems, supporting
+          soft-delete patterns and enabling historical analysis while maintaining
+          referential integrity.
+        type: bool
+      - name: ts_created
+        displayName: Ts Created
+        description: Records BI report column creation timing, supporting lifecycle
+          analysis and enabling historical tracking of analytics schema evolution
+          patterns.
+        type: timestamptz(6)
+      dataAccess:
+      - type: sql
+        qualifiedName:
+          database: Alation Analytics
+          schema: public
+          table: bi_report_column
+        documentationUrl: https://santoshsha-curation-hub.mtqa.alationcloud.com/table/130
+  x-relationships:
+  - cardinality: one_to_many
+    expression: customfieldvalue.object_type = 'table' AND rdbms_tables.table_id = customfieldvalue.object_id
+    left_nullable: false
+    left_table: rdbms_tables
+    name: rdbms_tables__customfieldvalue
+    right_nullable: true
+    right_table: customfieldvalue
+    sql_dialect: postgres
+    description: |
+      Join rdbms_tables with their associated custom field values.
+      Use this relationship to find all custom fields applied to tables.
+
+      **Example query - Find tables with their technical owners:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        cfv.field_name,
+        cfv.field_value_array
+      FROM rdbms_tables t
+      LEFT JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+        AND cfv.field_name ILIKE '%technical%owner%'
+      WHERE t.deleted = false;
+      ```
+  - cardinality: one_to_many
+    expression: customfieldvalue.object_type = 'attribute' AND rdbms_columns.column_id = customfieldvalue.object_id
+    left_nullable: false
+    left_table: rdbms_columns
+    name: rdbms_columns__customfieldvalue
+    right_nullable: true
+    right_table: customfieldvalue
+    sql_dialect: postgres
+    description: |
+      Join rdbms_columns with their associated custom field values.
+      Use this relationship to find all custom fields applied to columns.
+
+      **Example query - Find columns with their technical owners:**
+      ```sql
+      SELECT
+        c.name AS column_name,
+        c.title,
+        cfv.field_name,
+        cfv.field_value_array
+      FROM rdbms_columns c
+      LEFT JOIN customfieldvalue cfv
+        ON cfv.object_type = 'attribute'
+        AND c.column_id = cfv.object_id
+        AND cfv.field_name ILIKE '%technical%owner%'
+      WHERE c.deleted = false;
+      ```
+
+  - cardinality: one_to_many
+    expression: customfieldvalue.object_type = 'schema' AND rdbms_schemas.schema_id = customfieldvalue.object_id
+    left_nullable: false
+    left_table: rdbms_schemas
+    name: rdbms_schemas__customfieldvalue
+    right_nullable: true
+    right_table: customfieldvalue
+    sql_dialect: postgres
+    description: |
+      Join rdbms_schemas with their associated custom field values.
+      Use this relationship to find all custom fields applied to schemas.
+
+      **Example query - Find schemas with their technical owners:**
+      ```sql
+      SELECT
+        s.name AS schema_name,
+        s.title,
+        cfv.field_name,
+        cfv.field_value_array
+      FROM rdbms_schemas s
+      LEFT JOIN customfieldvalue cfv
+        ON cfv.object_type = 'schema'
+        AND s.schema_id = cfv.object_id
+        AND cfv.field_name ILIKE '%technical%owner%'
+      WHERE s.deleted = false;
+      ```
+
+  - cardinality: one_to_many
+    expression: customfieldvalue.object_type = 'data' AND rdbms_datasources.ds_id = customfieldvalue.object_id
+    left_nullable: false
+    left_table: rdbms_datasources
+    name: rdbms_datasources__customfieldvalue
+    right_nullable: true
+    right_table: customfieldvalue
+    sql_dialect: postgres
+    description: |
+      Join rdbms_datasources with their associated custom field values.
+      Use this relationship to find all custom fields applied to datasources.
+
+      **Example query - Find datasources with their technical owners:**
+      ```sql
+      SELECT
+        ds.name AS datasource_name,
+        ds.title,
+        cfv.field_name,
+        cfv.field_value_array
+      FROM rdbms_datasources ds
+      LEFT JOIN customfieldvalue cfv
+        ON cfv.object_type = 'data'
+        AND ds.ds_id = cfv.object_id
+        AND cfv.field_name ILIKE '%technical%owner%'
+      WHERE ds.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['user_'||users.user_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__users
+    right_nullable: false
+    right_table: users
+    sql_dialect: postgres
+    description: |
+      Join custom field values with users when the field references user assignments.
+      The @> operator checks if the array contains the user reference.
+
+      **Important:** User references in field_value_array use the format 'user_<id>'.
+      This relationship uses PostgreSQL's array containment operator (@>) for efficient lookups.
+
+      **Example query - Find all tables with specific user as their technical owner:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        u.display_name AS owner_name,
+        u.user_email AS owner_email
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+        AND cfv.field_name ILIKE '%technical%owner%'
+      JOIN users u
+        ON cfv.field_value_array @> ARRAY['user_'||u.user_id]
+      WHERE t.deleted = false
+        AND u.user_id = 102;
+      ```
+
+  - cardinality: many_to_many
+    expression: users.user_id = user_group_membership.user_id
+    left_nullable: false
+    left_table: users
+    name: users__user_group_membership
+    right_nullable: false
+    right_table: user_group_membership
+    sql_dialect: postgres
+    description: |
+      Join users with their group memberships.
+      Use this relationship to find which groups a user belongs to.
+
+      **Example query - Find all groups for a specific user:**
+      ```sql
+      SELECT
+        u.display_name AS user_name,
+        u.user_email,
+        ag.group_name,
+        ag.display_name AS group_display_name
+      FROM users u
+      JOIN user_group_membership ugm ON u.user_id = ugm.user_id
+      JOIN alation_group ag ON ugm.group_id = ag.group_id
+      WHERE u.user_id = 101
+        AND ag.deleted = false;
+      ```
+
+  - cardinality: one_to_many
+    expression: alation_group.group_id = user_group_membership.group_id
+    left_nullable: true
+    left_table: alation_group
+    name: alation_group__user_group_membership
+    right_nullable: false
+    right_table: user_group_membership
+    sql_dialect: postgres
+    description: |
+      Join groups with their member users.
+      Use this relationship to find all users in a specific group.
+
+      **Example query - Find all users in a specific group:**
+      ```sql
+      SELECT
+        ag.group_name,
+        u.display_name AS user_name,
+        u.user_email,
+        u.user_type
+      FROM alation_group ag
+      JOIN user_group_membership ugm ON ag.group_id = ugm.group_id
+      JOIN users u ON ugm.user_id = u.user_id
+      WHERE ag.group_name = 'Data Engineering Team'
+        AND ag.deleted = false
+        AND u.suspended = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['groupprofile_'||alation_group.group_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__alation_group
+    right_nullable: false
+    right_table: alation_group
+    sql_dialect: postgres
+    description: |
+      Join custom field values with groups when the field references group assignments.
+      The @> operator checks if the array contains the group reference.
+
+      **Important:** Group references in field_value_array use the format 'groupprofile_<id>'.
+
+      **Example query - Find tables assigned to a specific group:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        ag.group_name AS assigned_group,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN alation_group ag
+        ON cfv.field_value_array @> ARRAY['groupprofile_'||ag.group_id]
+      WHERE ag.group_name = 'Data Engineering Team'
+        AND t.deleted = false
+        AND ag.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['business_policy_'||business_policy.policy_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__business_policy
+    right_nullable: false
+    right_table: business_policy
+    sql_dialect: postgres
+    description: |
+      Join custom field values with business policies when the field references policy assignments.
+      The @> operator checks if the array contains the policy reference.
+
+      **Important:** Policy references in field_value_array use the format 'business_policy_<id>'.
+
+      **Example query - Find all tables with a specific policy applied:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        bp.title AS policy_title,
+        bp.policy_type_name,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN business_policy bp
+        ON cfv.field_value_array @> ARRAY['business_policy_'||bp.policy_id]
+      WHERE bp.policy_type_name = 'Data Retention'
+        AND t.deleted = false
+        AND bp.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['glossary_term_'||terms.term_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__terms
+    right_nullable: false
+    right_table: terms
+    sql_dialect: postgres
+    description: |
+      Join custom field values with glossary terms when the field references term assignments.
+      The @> operator checks if the array contains the term reference.
+
+      **Important:** Term references in field_value_array use the format 'glossary_term_<id>'.
+
+      **Example query - Find all tables tagged with specific business terms:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        term.title AS term_title,
+        term.description AS term_definition,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN terms term
+        ON cfv.field_value_array @> ARRAY['glossary_term_'||term.term_id]
+      WHERE term.term_type_name = 'Business Term'
+        AND t.deleted = false
+        AND term.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['data_'||rdbms_datasources.ds_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__rdbms_datasources
+    right_nullable: false
+    right_table: rdbms_datasources
+    sql_dialect: postgres
+    description: |
+      Join custom field values with datasources when the field references datasource assignments.
+      The @> operator checks if the array contains the datasource reference.
+
+      **Important:** Datasource references in field_value_array use the format 'data_<ds_id>'.
+
+      **Example query - Find tables linked to a specific datasource via custom fields:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        ds.title AS datasource_title,
+        ds.type AS datasource_type,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN rdbms_datasources ds
+        ON cfv.field_value_array @> ARRAY['data_'||ds.ds_id]
+      WHERE ds.ds_id = 12
+        AND t.deleted = false
+        AND ds.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['schema_'||rdbms_schemas.schema_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__rdbms_schemas
+    right_nullable: false
+    right_table: rdbms_schemas
+    sql_dialect: postgres
+    description: |
+      Join custom field values with schemas when the field references schema assignments.
+      The @> operator checks if the array contains the schema reference.
+
+      **Important:** Schema references in field_value_array use the format 'schema_<schema_id>'.
+
+      **Example query - Find tables linked to a specific schema via custom fields:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        s.name AS schema_name,
+        s.title AS schema_title,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN rdbms_schemas s
+        ON cfv.field_value_array @> ARRAY['schema_'||s.schema_id]
+      WHERE s.schema_id = 321
+        AND t.deleted = false
+        AND s.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['attribute_'||rdbms_columns.column_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__rdbms_columns
+    right_nullable: false
+    right_table: rdbms_columns
+    sql_dialect: postgres
+    description: |
+      Join custom field values with columns when the field references column/attribute assignments.
+      The @> operator checks if the array contains the column reference.
+
+      **Important:** Column references in field_value_array use the format 'attribute_<column_id>'.
+
+      **Example query - Find tables with columns marked as PII via custom fields:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        c.name AS column_name,
+        c.data_type,
+        cfv.field_name,
+        cfv.field_value_text AS classification
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN rdbms_columns c
+        ON cfv.field_value_array @> ARRAY['attribute_'||c.column_id]
+      WHERE cfv.field_name ILIKE '%pii%'
+        AND t.deleted = false
+        AND c.deleted = false;
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['article_'||article.article_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__article
+    right_nullable: false
+    right_table: article
+    sql_dialect: postgres
+    description: |
+      Join custom field values with articles when the field references article assignments.
+      The @> operator checks if the array contains the article reference.
+
+      **Important:** Article references in field_value_array use the format 'article_<article_id>'.
+
+      **Example query - Find tables with linked documentation articles:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        a.title AS article_title,
+        a.user_id AS article_author_id,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN article a
+        ON cfv.field_value_array @> ARRAY['article_'||a.article_id]
+      WHERE t.deleted = false
+        AND a.deleted = false
+        AND cfv.field_name ILIKE '%documentation%';
+      ```
+
+  - cardinality: many_to_one
+    expression: customfieldvalue.field_value_array @> ARRAY['glossary_v3_'||glossaries.glossary_id]
+    left_nullable: true
+    left_table: customfieldvalue
+    name: customfieldvalue__glossaries
+    right_nullable: false
+    right_table: glossaries
+    sql_dialect: postgres
+    description: |
+      Join custom field values with glossaries when the field references glossary/folder assignments.
+      The @> operator checks if the array contains the glossary reference.
+
+      **Important:** Glossary references in field_value_array use the format 'glossary_v3_<glossary_id>'.
+
+      **Example query - Find tables associated with a specific glossary:**
+      ```sql
+      SELECT
+        t.name AS table_name,
+        t.title,
+        g.glossary_title,
+        g.glossary_description,
+        cfv.field_name
+      FROM rdbms_tables t
+      JOIN customfieldvalue cfv
+        ON cfv.object_type = 'table'
+        AND t.table_id = cfv.object_id
+      JOIN glossaries g
+        ON cfv.field_value_array @> ARRAY['glossary_v3_'||g.glossary_id]
+      WHERE g.glossary_id = 301
+        AND t.deleted = false
+        AND g.deleted = false;
+      ```
+  - name: customfieldvalue_to_bi_report
+    rightTable: bi_report
+    expression: customfieldvalue.object_type = 'bi_report' AND customfieldvalue.object_id = bi_report.id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_report tables based
+      on oid and id fields.
+  - name: customfieldvalue_to_bi_folder
+    rightTable: bi_folder
+    expression: customfieldvalue.object_type = 'bi_folder' AND customfieldvalue.object_id = bi_folder.id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_folder tables based
+      on oid and id fields.
+  - name: customfieldvalue_to_bi_datasources
+    rightTable: bi_datasources
+    expression: customfieldvalue.object_type = 'bi_datasources' AND customfieldvalue.object_id = bi_datasources.id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_datasources tables based
+      on oid and id fields.
+  - name: customfieldvalue_to_bi_datasource_columns
+    rightTable: bi_datasource_columns
+    expression: customfieldvalue.object_type = 'bi_datasource_columns' AND customfieldvalue.object_id = bi_datasource_columns.bi_ds_column_id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_datasource_columns tables
+      based on oid and id fields.
+  - name: customfieldvalue_to_bi_connection_column
+    rightTable: bi_connection_column
+    expression: customfieldvalue.object_type = 'bi_connection_column' AND customfieldvalue.object_id = bi_connection_column.bi_connection_column_id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_connection_column tables
+      based on oid and id fields.
+  - name: customfieldvalue_to_bi_server
+    rightTable: bi_server
+    expression: customfieldvalue.object_type = 'bi_server' AND customfieldvalue.object_id = bi_server.id
+    sqlDialect: postgres
+    leftNullable: false
+    rightNullable: false
+    notes: Potential join between customfieldvalue and bi_server tables based
+      on oid and id fields.
